@@ -9,15 +9,16 @@ module HttpAcceptLanguage
     #   # => [ 'nl-NL', 'nl-BE', 'nl', 'en-US', 'en' ]
     #
     def user_preferred_languages
-      @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE'].split(/\s*,\s*/).collect do |l|
+      @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE'].split(/\s*,\s*/).collect {|l|
         l += ';q=1.0' unless l =~ /;q=\d+\.\d+$/
           l.split(';q=')
-      end.sort do |x,y|
-        raise "Not correctly formatted" unless x.first =~ /^[a-z\-]+$/i
+      }.select {|l|
+        l.first =~ /^[a-z\-]+$/i
+      }.sort { |x,y|
         y.last.to_f <=> x.last.to_f
-      end.collect do |l|
+      }.collect { |l|
         l.first.downcase.gsub(/-[a-z]+$/i) { |x| x.upcase }
-      end
+      }
     rescue # Just rescue anything if the browser messed up badly.
       []
     end
